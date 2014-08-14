@@ -51,3 +51,56 @@ rhel6stig_ntp_config_restrict:
   - "-6 default kod nomodify notrap nopeer noquery"
   - "127.0.0.1"
   - "-6 ::1"
+
+
+# Services to be disabled
+unsecure_service:
+  - name: rlogind
+    category: High
+    finding_id: V-38602
+    service_type: sysv
+
+  - name: rshd
+    category: High
+    finding_id: V-38594
+    service_type: xinetd
+
+  - name: rsh-server
+    category: High
+    finding_id: V-38591
+    service_type: package
+
+  - name: rsh-server
+    category: High
+    finding_id: V-38591
+    service_type: package
+
+
+- name: Disable sysv services
+  service: name={{ item.name }} state=stopped enabled=no
+  when: "item.service_type == 'sysv' and (skip[item.name] is not defined or item.finding_id )"
+  with_items: unsecure_service
+  tags: [ item.service_type , item.finding_id ]
+
+- name: Disable xinetd services
+  command: chkconfig {{ item.name }} off
+  when: "item.service_type == 'xinetd' and skip[item.name] is not defined"
+  with_items: unsecure_service
+  tags: [ item.service_type , item.finding_id ]
+
+- name: Remove unsecure packages
+  yum: name={{ item.name }} state=absent
+  when: "item.service_type == 'package' and skip[item.name] is not defined"
+  with_items: unsecure_service
+  tags: [ item.service_type , item.finding_id ]
+
+
+
+V-38591 High  The rsh-server package must not be installed
+V-38587 High  The telnet-server package must not be installed
+
+V-38598 High  The rexecd service must not be running
+V-38701 High  The TFTP daemon must operate in secure mode which provides access only to a single directory on the host file system
+Checking if tftp-server is installed
+V-38609 Medium  The TFTP service must not be running
+V-38604 Medium  The ypbind service must not be running

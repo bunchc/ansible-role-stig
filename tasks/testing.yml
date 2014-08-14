@@ -1,0 +1,63 @@
+---
+- name:  RHEL 6 STIG Development
+  # hosts: 172.30.243.54
+  hosts: stigtest.royall.com
+  sudo: yes
+
+  vars:
+    skip: {tftp: true, rsh: true}
+
+    unsecure_service:
+      - name: postfix
+        category: High
+        finding_id: V-BS
+        service_type: sysv
+        package_name: postfix
+
+      - name: rlogin
+        category: High
+        finding_id: V-38602
+        service_type: xinetd
+        package_name: rlogin
+
+      - name: rsh
+        category: High
+        finding_id: V-38594
+        service_type: xinetd
+        package_name: rsh
+
+      - name: rsh-server
+        category: High
+        finding_id: V-38591
+        service_type: package
+        package_name: rsh-server
+
+  tasks:
+
+    - name: Check if package is installed
+      command: rpm -q {{ item.package_name }}
+      register: rpm_check
+      failed_when: false
+      changed_when: false
+      always_run: true
+      with_items: unsecure_service
+
+    - name: Disable sysv services
+      service: name={{ item.item.name }} state=stopped enabled=no
+      register: sysv_check
+      failed_when: false
+      when: "item.rc == 0 and item.item.service_type == 'sysv' and skip[item.item.name] is not defined"
+      with_items: rpm_check.results
+
+    # - name: Disable xinetd services
+    #   command: chkconfig {{ item.name }} off
+    #   register: xinetd_check
+    #   when: "item.service_type == 'xinetd' and skip[item.name] is not defined"
+    #   failed_when: "'FAIL' in xinetd_check.stderr"
+    #   with_items: unsecure_service
+
+    # - name: Remove unsecure packages
+    #   yum: name={{ item.name }} state=absent
+    #   register: package_check
+    #   when: "item.service_type == 'package' and skip[item.name] is not defined"
+    #   with_items: unsecure_service

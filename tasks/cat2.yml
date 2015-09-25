@@ -698,9 +698,9 @@
   tags: [ 'cat2' , 'V-38629' , 'gui' , 'screen_lock' ]
 
 - name: "Install Auditd"
-  - apt: name=auditd state=present
+  apt: name=auditd state=present
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  - yum: name=auditd state=preset
+  yum: name=auditd state=preset
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
   tags: [ 'cat2' , 'V-38623' , 'V-38631' , 'V-38632' , 'auditd' ]
 

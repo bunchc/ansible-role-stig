@@ -698,10 +698,7 @@
   tags: [ 'cat2' , 'V-38629' , 'gui' , 'screen_lock' ]
 
 - name: "Install Auditd"
-  apt: name=auditd state=present
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  yum: name=auditd state=preset
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  action: "{{ ansible_pkg_mgr }} state=installed name=auditd"
   tags: [ 'cat2' , 'V-38623' , 'V-38631' , 'V-38632' , 'auditd' ]
 
 - name: "V-38628 Medium  The operating system must produce audit records containing sufficient information to establish the identity of any user/subject associated with the event\n    V-38631 Medium  The operating system must employ automated mechanisms to facilitate the monitoring and control of remote access methods\n V-38632 Medium  The operating system must produce audit records containing sufficient information to establish what type of events occurred."
